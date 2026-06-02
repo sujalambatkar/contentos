@@ -1,0 +1,7 @@
+.DS_Store
+*.log
+
+# Backend secrets
+backend/.env
+backend/data/
+backend/uploads/

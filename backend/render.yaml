@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: contentos-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    envVars:
+      - key: GROQ_API_KEY
+        sync: false
+      - key: HF_API_KEY
+        sync: false
+      - key: MONGODB_URI
+        sync: false
+      - key: UPSTASH_REDIS_REST_URL
+        sync: false
+      - key: UPSTASH_REDIS_REST_TOKEN
+        sync: false
+      - key: SECRET_KEY
+        generateValue: true
+      - key: CHROMA_PATH
+        value: /data/chroma
+      - key: UPLOAD_DIR
+        value: /uploads
+      - key: ALLOWED_ORIGINS
+        sync: false
+    disk:
+      name: chroma-data
+      mountPath: /data
+      sizeGB: 1
+    healthCheckPath: /health
