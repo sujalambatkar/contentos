@@ -147,28 +147,31 @@ async def generate_instagram(state: dict) -> dict:
     return {**state, "platform_outputs": platform_outputs, "completed_platforms": completed}
 
 
-@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
+@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=15))
 async def generate_newsletter(state: dict) -> dict:
     topics = ", ".join(state.get("topics", []))
-    hooks = state.get("hooks", [])
+    hook = state.get("hooks", [""])[0]
     tone = _tone_context(state.get("tone_profile", {}))
-    content = state["raw_input"][:3000]
+    content = state["raw_input"][:1500]
 
     system = SystemMessage(content=(
-        f"You are a newsletter writer. {tone} "
-        "Write email-friendly content that readers actually open. Return ONLY valid JSON."
+        "You are a newsletter writer. Return ONLY a valid JSON object. No text outside the JSON."
     ))
     human = HumanMessage(content=(
-        f"Topics: {topics}\nHooks: {hooks}\n\nSource content:\n{content}\n\n"
-        "Write a newsletter section (300 words) with:\n"
-        "- 3 subject line options (A/B/C)\n"
-        "- Preview text (90 chars)\n"
-        "- Main content section\n\n"
-        'Return JSON: {"subject_lines": ["A", "B", "C"], "preview_text": "...", "body": "..."}'
+        f"Topics: {topics}\nOpening hook: {hook}\n{tone}\n\n"
+        f"Source:\n{content}\n\n"
+        "Write a newsletter section. Keep body under 200 words.\n"
+        'Return ONLY: {"subject_lines": ["A", "B", "C"], "preview_text": "90 chars max", "body": "..."}'
     ))
 
-    resp = await _llm(temperature=0.7).ainvoke([system, human])
+    resp = await _llm(temperature=0.7, max_tokens=700).ainvoke([system, human])
     result = _parse_json(resp.content)
+
+    # Normalise — model occasionally returns a list or wraps in extra key
+    if isinstance(result, list):
+        result = result[0] if result else {}
+    if "newsletter" in result:
+        result = result["newsletter"]
 
     platform_outputs = dict(state.get("platform_outputs", {}))
     platform_outputs["newsletter"] = result
@@ -179,29 +182,30 @@ async def generate_newsletter(state: dict) -> dict:
     return {**state, "platform_outputs": platform_outputs, "completed_platforms": completed}
 
 
-@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
+@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=15))
 async def generate_youtube(state: dict) -> dict:
     topics = ", ".join(state.get("topics", []))
     tone = _tone_context(state.get("tone_profile", {}))
-    content = state["raw_input"][:3000]
+    content = state["raw_input"][:1500]
 
     system = SystemMessage(content=(
-        f"You are a YouTube SEO and content expert. {tone} "
-        "Optimize for discoverability and watch time. Return ONLY valid JSON."
+        "You are a YouTube SEO expert. Return ONLY a valid JSON object. No text outside the JSON."
     ))
     human = HumanMessage(content=(
-        f"Topics: {topics}\n\nSource content:\n{content}\n\n"
-        "Create YouTube metadata:\n"
-        "- Title (60 chars, SEO optimized)\n"
-        "- Description (200-300 words with timestamps section)\n"
-        "- 3-5 timestamp markers (assume 10-min video)\n"
-        "- 15 tags\n\n"
-        'Return JSON: {"title": "...", "description": "...", '
-        '"timestamps": [{"time": "0:00", "label": "..."}, ...], "tags": [...]}'
+        f"Topics: {topics}\n{tone}\n\nSource:\n{content}\n\n"
+        "Create YouTube metadata. Keep description under 150 words. Use 3 timestamps. Use 10 tags.\n"
+        'Return ONLY: {"title": "...", "description": "...", '
+        '"timestamps": [{"time": "0:00", "label": "..."}], "tags": ["..."]}'
     ))
 
-    resp = await _llm(temperature=0.6).ainvoke([system, human])
+    resp = await _llm(temperature=0.6, max_tokens=700).ainvoke([system, human])
     result = _parse_json(resp.content)
+
+    # Normalise
+    if isinstance(result, list):
+        result = result[0] if result else {}
+    if "youtube" in result:
+        result = result["youtube"]
 
     platform_outputs = dict(state.get("platform_outputs", {}))
     platform_outputs["youtube"] = result

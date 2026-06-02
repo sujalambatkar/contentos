@@ -95,9 +95,10 @@ async def run_parallel_generators(state: dict) -> dict:
     if not requested:
         return state
 
-    # Stagger by 2s per platform — keeps parallel but avoids token-burst rate limiting
+    # Stagger by 4s per platform — Groq free tier has ~6k tokens/min cap.
+    # Twitter(0s) → LinkedIn(4s) → Instagram(8s) → Newsletter(12s) → YouTube(16s)
     tasks = [
-        _run_with_stagger(p, state, delay=i * 2)
+        _run_with_stagger(p, state, delay=i * 4)
         for i, p in enumerate(requested)
     ]
     results = await asyncio.gather(*tasks, return_exceptions=True)
