@@ -1,0 +1,61 @@
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap');
+@import "tailwindcss";
+
+@theme {
+  /* Colors */
+  --color-background: #0f1117;
+  --color-surface: #161b27;
+  --color-surface-2: #1e2535;
+  --color-primary: #6366f1;
+  --color-primary-hover: #818cf8;
+  --color-warm: #f8f7f4;
+  --color-muted: #6b7280;
+  --color-border: #2a3040;
+
+  /* Platform brand colors */
+  --color-twitter: #1d9bf0;
+  --color-linkedin: #0a66c2;
+  --color-instagram: #e1306c;
+  --color-newsletter: #f59e0b;
+  --color-youtube: #ff0000;
+
+  /* Typography */
+  --font-heading: 'Syne', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+
+  /* Animations */
+  --animate-fade-slide: fadeSlide 0.4s ease-out forwards;
+  --animate-pulse-slow: pulse 3s ease-in-out infinite;
+}
+
+@keyframes fadeSlide {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #0f1117;
+  color: #f8f7f4;
+  font-family: 'DM Sans', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Syne', sans-serif;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #161b27; }
+::-webkit-scrollbar-thumb { background: #2a3040; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #6366f1; }
+
+/* Grid texture utility */
+.bg-grid {
+  background-image: radial-gradient(circle, #2a3040 1px, transparent 1px);
+  background-size: 24px 24px;
+}
