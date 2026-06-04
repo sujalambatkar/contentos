@@ -19,9 +19,11 @@ settings = get_settings()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Ensure upload and chroma dirs exist
     os.makedirs(settings.upload_dir, exist_ok=True)
-    os.makedirs(settings.chroma_path, exist_ok=True)
+    # Ensure MongoDB index on tone_profiles for fast per-user lookups
+    from app.db.mongo import get_db
+    db = get_db()
+    await db.tone_profiles.create_index([("user_id", 1)])
     logger.info("ContentOS backend starting up")
     yield
     logger.info("ContentOS backend shutting down")

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from app.auth.utils import get_current_user
 from app.db.mongo import get_user_history, delete_content_job, get_content_job
-from app.db.chroma import store_tone_sample
+from app.db.vectors import store_tone_sample
 import uuid
 
 router = APIRouter(prefix="/content", tags=["history"])

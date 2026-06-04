@@ -3,7 +3,7 @@ import logging
 from tenacity import retry, stop_after_attempt, wait_exponential
 from langchain_groq import ChatGroq
 from langchain_core.messages import HumanMessage, SystemMessage
-from app.db.chroma import query_tone_samples
+from app.db.vectors import query_tone_samples
 from app.config import get_settings
 
 logger = logging.getLogger(__name__)
