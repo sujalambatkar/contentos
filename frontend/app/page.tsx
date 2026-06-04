@@ -188,6 +188,9 @@ export default function LandingPage() {
             </div>
 
             <p className="text-xs text-muted mt-4">No credit card. No rate limits on your side. Free forever on the free tier.</p>
+            <p className="text-xs text-muted/50 mt-2">
+              Hosted on Render free tier — first request after inactivity takes ~30s to wake up. Subsequent requests are instant.
+            </p>
           </motion.div>
         </div>
       </section>
