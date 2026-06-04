@@ -14,6 +14,44 @@ interface StreamingOutputProps {
   onComplete?: () => void;
 }
 
+// Maps a schedule suggestion like "Tue 9am EST" or "Wed 12pm" to the
+// nearest valid calendar slot key ("Tue 9am", "Wed 1pm", etc.)
+const VALID_DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const VALID_TIMES = ["7am", "9am", "11am", "1pm", "3pm", "5pm", "7pm"];
+const TIME_TO_HOUR: Record<string, number> = {
+  "7am": 7, "9am": 9, "11am": 11, "1pm": 13, "3pm": 15, "5pm": 17, "7pm": 19,
+};
+
+function toCalendarSlot(raw: string): string {
+  const parts = raw.trim().split(/\s+/);
+
+  // Normalise day
+  const dayRaw = (parts[0] ?? "Mon").slice(0, 3);
+  const day = VALID_DAYS.find(
+    (d) => d.toLowerCase() === dayRaw.toLowerCase()
+  ) ?? "Mon";
+
+  // Parse time — e.g. "9am", "12pm", "3pm", strip any trailing timezone
+  const timeRaw = (parts[1] ?? "9am").replace(/[^0-9apm]/gi, "").toLowerCase();
+  const match = timeRaw.match(/^(\d+)(am|pm)$/);
+  let hour = 9;
+  if (match) {
+    let h = parseInt(match[1], 10);
+    if (match[2] === "pm" && h !== 12) h += 12;
+    if (match[2] === "am" && h === 12) h = 0;
+    hour = h;
+  }
+
+  // Nearest valid slot by hour distance
+  const nearest = VALID_TIMES.reduce((best, t) =>
+    Math.abs(TIME_TO_HOUR[t] - hour) < Math.abs(TIME_TO_HOUR[best] - hour)
+      ? t
+      : best
+  );
+
+  return `${day} ${nearest}`;
+}
+
 const PLATFORM_LABELS: Record<string, string> = {
   twitter: "Twitter / X",
   linkedin: "LinkedIn",
@@ -124,11 +162,13 @@ export default function StreamingOutput({
                 | undefined
             }
             onAddToCalendar={() => {
-              toast.success(`${PLATFORM_LABELS[output.platform]} added to calendar`);
-              const firstTime =
-                (output.schedule?.times as string[] | undefined)?.[0] ||
-                "Mon 10am";
-              useContentStore.getState().addToCalendar(firstTime, output);
+              const rawTime =
+                (output.schedule?.times as string[] | undefined)?.[0] ?? "Mon 9am";
+              const slot = toCalendarSlot(rawTime);
+              useContentStore.getState().addToCalendar(slot, output);
+              toast.success(
+                `${PLATFORM_LABELS[output.platform]} added to ${slot}`
+              );
             }}
           />
         ))}
