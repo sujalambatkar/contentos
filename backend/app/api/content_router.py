@@ -2,7 +2,7 @@ import asyncio
 import json
 import uuid
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, Query
 from fastapi.responses import StreamingResponse
@@ -57,8 +57,8 @@ async def process_content(
         "tone_profile": {},
         "schedule": {},
         "errors": {},
-        "created_at": datetime.utcnow(),
-        "updated_at": datetime.utcnow(),
+        "created_at": datetime.now(timezone.utc).replace(tzinfo=None),
+        "updated_at": datetime.now(timezone.utc).replace(tzinfo=None),
     }
     await create_content_job(job_doc)
 

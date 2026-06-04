@@ -1,6 +1,6 @@
 from motor.motor_asyncio import AsyncIOMotorClient
 from bson import ObjectId
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 from app.config import get_settings
 
@@ -35,7 +35,7 @@ async def create_user(name: str, email: str, hashed_password: str) -> dict:
         "name": name,
         "email": email,
         "hashed_password": hashed_password,
-        "created_at": datetime.utcnow(),
+        "created_at": datetime.now(timezone.utc).replace(tzinfo=None),
         "is_active": True,
     }
     result = await db.users.insert_one(doc)
@@ -77,7 +77,7 @@ async def get_content_job(job_id: str) -> Optional[dict]:
 
 async def update_content_job(job_id: str, update: dict):
     db = get_db()
-    update["updated_at"] = datetime.utcnow()
+    update["updated_at"] = datetime.now(timezone.utc).replace(tzinfo=None)
     await db.content_jobs.update_one(
         {"job_id": job_id},
         {"$set": update},
